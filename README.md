@@ -1,72 +1,90 @@
-CKEditor 5 classic editor build
-========================================
+CKEditor 5 custom build
+=======================
 
-[![npm version](https://badge.fury.io/js/%40ckeditor%2Fckeditor5-build-classic.svg)](https://www.npmjs.com/package/@ckeditor/ckeditor5-build-classic)
-[![Build Status](https://travis-ci.org/ckeditor/ckeditor5-build-classic.svg?branch=master)](https://travis-ci.org/ckeditor/ckeditor5-build-classic)
-<br>
-[![Dependency Status](https://david-dm.org/ckeditor/ckeditor5-build-classic/status.svg)](https://david-dm.org/ckeditor/ckeditor5-build-classic)
-[![devDependency Status](https://david-dm.org/ckeditor/ckeditor5-build-classic/dev-status.svg)](https://david-dm.org/ckeditor/ckeditor5-build-classic?type=dev)
+This is my own custom CKEditor 5 build.
 
-The classic editor build for CKEditor 5. Read more about the [classic editor build](https://ckeditor.com/docs/ckeditor5/latest/builds/guides/overview.html#classic-editor) and see the [demo](https://ckeditor.com/docs/ckeditor5/latest/examples/builds/classic-editor.html).
+Read more about [custom builds](https://ckeditor.com/docs/ckeditor5/latest/builds/guides/development/custom-builds.html).
 
-![CKEditor 5 classic editor build screenshot](https://c.cksource.com/a/1/img/npm/ckeditor5-build-classic.png)
+## Requirements
 
-## Documentation
+In order to start developing CKEditor 5 you will require:
 
-See:
+* [Node.js](https://nodejs.org/en/) 6.9.0+
+* npm 4+ (**note:** some npm 5+ versions were known to cause [problems](https://github.com/npm/npm/issues/16991), especially with deduplicating packages; upgrade npm when in doubt)
+* [Git](https://git-scm.com/)
 
-* [Installation](https://ckeditor.com/docs/ckeditor5/latest/builds/guides/integration/installation.html) for how to install this package and what it contains.
-* [Basic API](https://ckeditor.com/docs/ckeditor5/latest/builds/guides/integration/basic-api.html) for how to create an editor and interact with it.
-* [Configuration](https://ckeditor.com/docs/ckeditor5/latest/builds/guides/integration/configuration.html) for how to configure the editor.
-* [Creating custom builds](https://ckeditor.com/docs/ckeditor5/latest/builds/guides/development/custom-builds.html) for how to customize the build (configure and rebuild the editor bundle).
+## Build anatomy
 
-## Quick start
+Every build contains the following files:
 
-First, install the build from npm:
+* `build/ckeditor.js` &ndash; The ready-to-use editor bundle, containing the editor and all plugins.
+* `src/ckeditor.js` &ndash; The source entry point of the build. Based on it the `build/ckeditor.js` file is created by [webpack](https://webpack.js.org). It defines the editor creator, the list of plugins and the default configuration of a build.
+* `webpack-config.js` &ndash; webpack configuration used to build the editor.
+
+## Updating CKEditor
+
+To make updating easier you may add the original build repository to your Git remotes:
+```
+git remote add upstream https://github.com/ckeditor/ckeditor5-build-classic.git
+```
+
+Since this is a fork of the official build, you can simply merge the changes that happened meanwhile in that build, using Git commands:
+```
+git fetch upstream
+git merge upstream/stable
+```
+
+## Customizing the build
+
+In order to customize a build you need to:
+
+* Install missing dependencies.
+* Update the `src/ckeditor.js` file.
+* Update the build (the editor bundle in `build/`).
+
+### Installing dependencies
+
+First, you need to install dependencies which are already specified in the build's `package.json`:
 
 ```bash
-npm install --save @ckeditor/ckeditor5-build-classic
+npm install
 ```
 
-And use it in your website:
+Then, you can add missing dependencies (i.e. packages you want to add to the build). The easiest way to do so is by typing:
 
-```html
-<div id="editor">
-	<p>This is the editor content.</p>
-</div>
-<script src="./node_modules/@ckeditor/ckeditor5-build-classic/build/ckeditor.js"></script>
-<script>
-	ClassicEditor
-		.create( document.querySelector( '#editor' ) )
-		.then( editor => {
-			window.editor = editor;
-		} )
-		.catch( error => {
-			console.error( 'There was a problem initializing the editor.', error );
-		} );
-</script>
+```bash
+npm install --save-dev <package-name>
 ```
 
-Or in your JavaScript application:
+This will install the package and add it to `package.json`. You can also edit `package.json` manually.
 
-```js
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+Due to the non-deterministic way how npm installs packages, it is recommended to run `rm -rf node_modules && npm install` when in doubt. This will prevent some packages from getting installed more than once in `node_modules/` (which might lead to broken builds).
 
-// Or using the CommonJS version:
-// const ClassicEditor = require( '@ckeditor/ckeditor5-build-classic' );
+If you encounter the `ckeditor-duplicated-modules` error, try to delete your `node_modules` directory and your `package-lock.json` file.
+If this doesn't help, see [error-ckeditor-duplicated-modules](https://ckeditor.com/docs/ckeditor5/latest/framework/guides/support/error-codes.html#error-ckeditor-duplicated-modules) on the CKEditor Documentation website.
 
-ClassicEditor
-	.create( document.querySelector( '#editor' ) )
-	.then( editor => {
-		window.editor = editor;
-	} )
-	.catch( error => {
-		console.error( 'There was a problem initializing the editor.', error );
-	} );
+### Rebuilding the bundle
+
+After you changed the webpack entry file or updated some dependencies, it is time to rebuild the bundle. This will run a bundler (webpack) with a proper configuration (see `webpack.config.js`).
+
+To do that, execute the following command:
+
+```bash
+npm run build
 ```
 
-**Note:** If you are planning to integrate CKEditor 5 deep into your application, it is actually more convenient and recommended to install and import the source modules directly (like it happens in `ckeditor.js`). Read more in the [Advanced setup guide](https://ckeditor.com/docs/ckeditor5/latest/builds/guides/integration/advanced-setup.html).
+### Testing the bundle
 
-## License
+You can validate whether your new build works by opening the `sample/index.html` file in a browser (via HTTP, not as a local file).
 
-Licensed under the terms of [GNU General Public License Version 2 or later](http://www.gnu.org/licenses/gpl.html). For full details about the license, please check the `LICENSE.md` file or [https://ckeditor.com/legal/ckeditor-oss-license](https://ckeditor.com/legal/ckeditor-oss-license).
+Install http-server globally:
+```bash
+npm install http-server -g
+```
+
+Then, in the project directory run:
+```bash
+http-server .
+```
+
+You can now open your browser and visit http://127.0.0.1:8080/sample/index.html
